@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #_dash-app-content {
+  margin: 0;
+  padding: 0;
+  background: #F9F7F4;
+  color: #1C1917;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+/* ── Main tabs ───────────────────────────────────────────────────────────── */
+.dash-tabs {
+  border-bottom: 1px solid #DDD9D2 !important;
+  background: #FFFFFF !important;
+}
+.dash-tab {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: #A8A29E !important;
+  font-family: 'Barlow Condensed', sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 10px 20px !important;
+  transition: color 0.15s, border-color 0.15s !important;
+}
+.dash-tab:hover { color: #57534E !important; }
+.dash-tab--selected {
+  background: transparent !important;
+  border-bottom: 2px solid #2563EB !important;
+  color: #1C1917 !important;
+}
+.tab-content { background: #F9F7F4 !important; }
+
+/* ── Modal tabs ──────────────────────────────────────────────────────────── */
+.modal-tabs {
+  border-bottom: 1px solid #DDD9D2 !important;
+  background: transparent !important;
+  margin-top: 12px !important;
+}
+.modal-tab {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: #A8A29E !important;
+  font-family: 'Barlow Condensed', sans-serif !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 8px 20px !important;
+  transition: color 0.15s, border-color 0.15s !important;
+}
+.modal-tab:hover { color: #57534E !important; }
+.modal-tab--selected {
+  background: transparent !important;
+  border-bottom: 2px solid #2563EB !important;
+  color: #1C1917 !important;
+}
+
+/* ── Match card hover ────────────────────────────────────────────────────── */
+.match-card {
+  transition: transform 0.15s ease, filter 0.15s ease;
+  will-change: transform;
+}
+.match-card:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.04);
+}
+.match-card:active {
+  transform: translateY(-1px);
+  filter: brightness(0.97);
+}
+
+/* ── Modal close button ──────────────────────────────────────────────────── */
+.modal-close-btn {
+  background: none;
+  border: 1px solid #DDD9D2;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: #78716C;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.modal-close-btn:hover {
+  border-color: #78716C;
+  color: #1C1917;
+}
+
+/* ── Date radio pills ────────────────────────────────────────────────────── */
+.date-radio label {
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #78716C;
+  border: 1px solid #DDD9D2;
+  background: #F9F7F4;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.date-radio label:hover {
+  color: #1C1917;
+  border-color: #A8A29E;
+  background: #F2F0EC;
+}
+.date-radio input[type=radio]:checked + label {
+  background: #EFF6FF;
+  color: #2563EB;
+  border-color: #BFDBFE;
+}
+
+/* ── Odds inputs ─────────────────────────────────────────────────────────── */
+.odds-input input {
+  background: #F2F0EC !important;
+  border: 1px solid #DDD9D2 !important;
+  border-radius: 6px !important;
+  color: #1C1917 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  padding: 6px 10px !important;
+  width: 100% !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+.odds-input input:focus {
+  border-color: #93C5FD !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.1) !important;
+}
+
+/* ── Pipeline buttons ────────────────────────────────────────────────────── */
+.pipe-btn {
+  background: #F2F0EC;
+  border: 1px solid #DDD9D2;
+  border-radius: 8px;
+  color: #44403C;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.pipe-btn:hover {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
+}
+
+/* ── Date dropdown ───────────────────────────────────────────────────────── */
+.date-dropdown .Select-control {
+  background: #F9F7F4 !important;
+  border: 1px solid #DDD9D2 !important;
+  border-radius: 20px !important;
+  min-height: 32px !important;
+  height: 32px !important;
+}
+.date-dropdown .Select-value {
+  line-height: 30px !important;
+}
+.date-dropdown .Select-input { height: 30px !important; }
+.date-dropdown .Select-placeholder {
+  line-height: 30px !important;
+  color: #78716C !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+}
+.date-dropdown .Select-menu-outer {
+  border-radius: 10px !important;
+  margin-top: 4px !important;
+}
+
+/* ── Generic dropdown ────────────────────────────────────────────────────── */
+.Select-control {
+  background: #F2F0EC !important;
+  border: 1px solid #DDD9D2 !important;
+  border-radius: 8px !important;
+  color: #1C1917 !important;
+}
+.Select-control:hover { border-color: #A8A29E !important; }
+.Select-menu-outer {
+  background: #FFFFFF !important;
+  border: 1px solid #DDD9D2 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+  border-radius: 8px !important;
+}
+.VirtualizedSelectOption { background: #FFFFFF !important; color: #1C1917 !important; }
+.VirtualizedSelectFocusedOption { background: #EFF6FF !important; color: #1D4ED8 !important; }
+.Select-value-label { color: #1C1917 !important; }
+.Select-placeholder { color: #A8A29E !important; }
+.Select-arrow { border-top-color: #A8A29E !important; }
+.is-focused .Select-control {
+  border-color: #93C5FD !important;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.1) !important;
+}
+
+/* ── Bet toast ───────────────────────────────────────────────────────────── */
+@keyframes bet-toast-show {
+  0%   { opacity: 0; transform: translateY(10px); }
+  12%  { opacity: 1; transform: translateY(0); }
+  72%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(0); }
+}
+.bet-toast-inner {
+  background: #1C1917;
+  color: #F5F5F4;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  white-space: nowrap;
+  animation: bet-toast-show 3s ease-in-out forwards;
+}
+
+/* ── DataTable ───────────────────────────────────────────────────────────── */
+.dash-spreadsheet-container .dash-spreadsheet-inner td,
+.dash-spreadsheet-container .dash-spreadsheet-inner th {
+  background: #F9F7F4 !important;
+  color: #1C1917 !important;
+  border-color: #DDD9D2 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.85rem !important;
+}
+.dash-spreadsheet-container .dash-spreadsheet-inner input {
+  background: #F2F0EC !important;
+  color: #1C1917 !important;
+}
+.dash-spreadsheet-container .dash-spreadsheet-inner td.cell--selected,
+.dash-spreadsheet-container .dash-spreadsheet-inner td.focused {
+  background: #EFF6FF !important;
+  border: 1px solid #93C5FD !important;
+}
