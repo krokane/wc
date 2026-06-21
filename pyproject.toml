@@ -2,9 +2,8 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["wc*"]
+[tool.setuptools]
+py-modules = ["main"]
 
 [project]
 name = "wc"
@@ -27,3 +26,6 @@ dependencies = [
 
 [tool.uv]
 package = true
+
+[project.scripts]
+wc = "main:cli"
