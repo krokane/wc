@@ -5,14 +5,16 @@ Run this after daily retraining (before new results are scraped) to capture
 the model's pre-game predictions. These snapshots are shown on the History
 page alongside the retroactive predictions.
 """
+
 import datetime
 import sys
 from pathlib import Path
 
+from fixtures import predict_upcoming
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from fixtures import predict_upcoming
 
 SNAPSHOTS_DIR = ROOT / "data" / "prediction_snapshots"
 
