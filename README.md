@@ -1,6 +1,6 @@
 # WC 2026 Prediction Model
 
-XGBoost Poisson regression model for predicting World Cup 2026 match outcomes. Trains on historical international football data (2003–2025) and generates win/draw/loss probabilities, expected goals, and scoreline distributions for upcoming fixtures. Includes a Dash dashboard for browsing predictions, tracking bets, and reviewing retroactive model accuracy.
+XGBoost Poisson regression model for predicting World Cup 2026 match outcomes. Trains on historical international football data (2003–2025) and generates win/draw/loss probabilities, expected goals, and scoreline distributions for upcoming fixtures. Includes a Dash dashboard for browsing predictions and reviewing retroactive model accuracy.
 
 ---
 
@@ -73,13 +73,10 @@ uv run wc dash
 Upcoming WC2026 fixtures with model win/draw/loss probabilities, expected goals, and implied American odds. Filterable by date. Click any match to open the analysis modal.
 
 ### Match Modal (4 tabs)
-- **Betting Calculator** — enter market odds (American), see model edge and Kelly % for W/D/L and Draw No Bet markets. Log bets directly.
+- **Betting Calculator** — enter market odds (American), see model edge and Kelly % for W/D/L and Draw No Bet markets.
 - **Total Goals** — over/under edge calculator for any line.
 - **Scorelines** — top 8 most likely exact scores with probabilities and implied odds.
 - **Parlay** — pick outcomes across same-day games; calculates combined probability, model-implied parlay odds, and edge vs. market parlay price.
-
-### Bet Tracker
-Log bets from the modal, mark results (won/lost/push), and track P&L and ROI.
 
 ### Pipeline
 Run individual data pipeline stages or the full end-to-end pipeline from the UI.
