@@ -1,6 +1,7 @@
 import glob
 
 import pandas as pd
+
 from tools.columns import FS_UNUSED_COLS
 from tools.maps import FS_TO_CANONICAL, WC26_ABBR, WC26_TEAMS
 

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 from scipy.stats import poisson
+from upcoming import get_upcoming_fixtures
 
 DROP_COLS = [
     "id",
@@ -29,6 +30,7 @@ def predict_fixtures(feats, model_path=MODEL_PATH):
     booster.load_model(model_path)
 
     feats = feats.copy()
+    feats["year"] = feats["game_id"].str.split("_").str[0].astype(int)
     X = feats.drop(columns=DROP_COLS)[booster.feature_names]
     feats["exp_goals"] = booster.predict(xgb.DMatrix(X))
 
@@ -40,7 +42,7 @@ def predict_fixtures(feats, model_path=MODEL_PATH):
         if pd.isna(opp):
             continue
         p_win, p_draw, p_loss, grid = predict_match(r["exp_goals"], opp)
-        i, j = np.unravel_index(grid.argmax(), grid.shape)  # most likely scoreline
+        i, j = np.unravel_index(grid.argmax(), grid.shape)
         out.append(
             {
                 "game_id": r["game_id"],
@@ -57,8 +59,16 @@ def predict_fixtures(feats, model_path=MODEL_PATH):
     return pd.DataFrame(out)
 
 
+def predict_upcoming(features_path="./data/features.csv", model_path=MODEL_PATH):
+    feats = get_upcoming_fixtures(features_path)
+    if feats.empty:
+        return pd.DataFrame()
+    return predict_fixtures(feats, model_path)
+
+
 if __name__ == "__main__":
-    df = pd.read_csv("./data/features.csv")
-    df["year"] = df["game_id"].str.split("_").str[0].astype(int)
-    fixtures = df[(df["year"] == 26) & (df["world_cup"] == 1)]
-    print(predict_fixtures(fixtures).to_string(index=False))
+    results = predict_upcoming()
+    if results.empty:
+        print("No upcoming fixtures found (all games may already be in features.csv).")
+    else:
+        print(results.sort_values("game_id").to_string(index=False))

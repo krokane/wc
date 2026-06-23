@@ -16,7 +16,7 @@ from tools.columns import (
 
 elo_raw = pd.read_csv("./data/elo_results.csv")
 fs_raw = pd.read_csv("./data/fs_results.csv")
-tm_raw = pd.read_csv("./data/tm_results.csv")
+# tm_raw = pd.read_csv("./data/tm_results.csv")
 
 
 def stack_teams(df, ind, t1_cols, t2_cols, out_cols):
@@ -87,12 +87,12 @@ def main():
     elo = elo_restructure()
     fs = fs_restructure()
 
-    tm = tm_raw
-    tm_opp = tm_raw.copy()
+    # tm = tm_raw
+    # tm_opp = tm_raw.copy()
 
-    tm_opp.columns = [
-        c + "_opponent" if c != "team_abbr" else c for c in tm_opp.columns
-    ]
+    # tm_opp.columns = [
+    #     c + "_opponent" if c != "team_abbr" else c for c in tm_opp.columns
+    # ]
 
     final = pd.merge(elo, fs, how="left", on=["id", "game_id", "team"])
 

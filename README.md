@@ -29,15 +29,15 @@ uv run wc <command>
 
 | Command | Description |
 |---|---|
-| `dash` | Launch the prediction dashboard (port 8050) |
-| `scrape-elo` | Scrape Elo ratings and results → `data/elo_results.csv` |
-| `process-stats` | Process FootyStats data → `data/fs_results.csv` |
-| `build-features` | Build model feature matrix → `data/features.csv` |
-| `train` | Train eval + deploy XGBoost models → `models/*.txt` |
-| `evaluate` | Evaluate models on WC2026 holdout |
-| `predict` | Predict upcoming fixtures with the deploy model |
-| `save-predictions` | Snapshot today's predictions → `data/prediction_snapshots/` |
+| `dash [--port N] [--debug]` | Launch the prediction dashboard (default port 8050) |
+| `elo` | Scrape Elo ratings and results → `data/elo_results.csv` |
+| `stats` | Process FootyStats data → `data/fs_results.csv` |
+| `features` | Build model feature matrix → `data/features.csv` |
+| `upcoming` | Fetch upcoming fixtures from eloratings.net |
+| `train [--eval]` | Train the deploy XGBoost model (add `--eval` to also run eval model comparison) |
+| `predict` | Predict outcomes for upcoming fixtures with the deploy model |
 | `retro-predict` | Day-by-day retroactive predictions for past WC2026 games → `data/retro_predictions.csv` |
+| `pipeline` | Run the full end-to-end pipeline (elo → stats → features → train → upcoming → predict → retro-predict) |
 
 ---
 
@@ -98,7 +98,6 @@ Past WC2026 results with retroactive model predictions. Shows overall accuracy a
 |---|---|
 | `data/elo_results.csv` | Match results + Elo ratings (scraped) |
 | `data/fs_results.csv` | FootyStats per-game xG and shot stats |
-| `data/tm_results.csv` | Transfermarkt squad value data |
 | `data/features.csv` | Full model feature matrix |
 | `data/manual_xg.csv` | Manually entered WC2026 xG values |
 | `data/retro_predictions.csv` | Day-by-day retroactive WC2026 predictions |

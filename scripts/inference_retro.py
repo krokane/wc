@@ -1,26 +1,20 @@
-"""
-Day-by-day retroactive predictions for past WC2026 games.
-
-For each WC2026 match date D, trains a model on:
-  - All pre-2026 historical data (years 03-25)
-  - Any WC2026 games already played before date D (their results + xG lags)
-
-Then predicts the games played on date D.
-
-This mirrors what the model would have actually known on each match day,
-including xG lag information from prior WC2026 games.
-
-Saves to data/retro_predictions.csv with a pred_date column.
-"""
 import datetime
+
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 from scipy.stats import poisson
 
 DROP_COLS = [
-    "id", "game_id", "team", "opponent",
-    "goals_scored", "goals_conceded", "outcome", "year", "game_date",
+    "id",
+    "game_id",
+    "team",
+    "opponent",
+    "goals_scored",
+    "goals_conceded",
+    "outcome",
+    "year",
+    "game_date",
 ]
 
 
@@ -43,9 +37,8 @@ def main():
     df["game_date"] = df["game_id"].apply(_date_from_gid)
 
     today = datetime.date.today()
-    test_mask = df["year"] == 26
+    test_mask = (df["year"] == 26) & (df["world_cup"] == 1)
 
-    # Only backfill games that have been played (goals_scored present) and are in the past
     played_mask = test_mask & df["goals_scored"].notna() & (df["game_date"] < today)
 
     if not played_mask.any():
@@ -56,7 +49,6 @@ def main():
     n_days = len(wc26_dates)
     print(f"Found {n_days} WC2026 match day(s) to backfill.")
 
-    # Compute best_iteration once via early stopping (same logic as model.py)
     wc_proxy = (df["world_cup"] == 1) & (df["year"] == 22)
     cont_proxy = (df["continent"] == 1) & (df["year"] == 24)
     val_mask = wc_proxy | cont_proxy
@@ -71,6 +63,7 @@ def main():
         "colsample_bytree": 0.8,
         "subsample": 0.8,
         "verbosity": 0,
+        "seed": 42,
     }
 
     X_all = df.drop(columns=DROP_COLS)
@@ -96,10 +89,8 @@ def main():
     all_out = []
 
     for match_date in wc26_dates:
-        # Training data: all non-WC2026 games + WC2026 games played strictly before this date
-        day_train_mask = (
-            (~test_mask)
-            | (test_mask & df["goals_scored"].notna() & (df["game_date"] < match_date))
+        day_train_mask = (~test_mask) | (
+            test_mask & df["goals_scored"].notna() & (df["game_date"] < match_date)
         )
 
         X_day = X_all[day_train_mask]
@@ -112,12 +103,15 @@ def main():
             num_boost_round=best_iter,
         )
 
-        # Predict WC2026 games on this date that have been played
         games_today = df[
             test_mask & (df["game_date"] == match_date) & df["goals_scored"].notna()
         ].copy()
 
-        X_today = games_today.drop(columns=DROP_COLS)[retro_model.feature_names]
+        X_today = games_today.drop(columns=DROP_COLS)[retro_model.feature_names].copy()
+
+        for col in ("xg", "xg_conceded"):
+            if col in X_today.columns:
+                X_today[col] = np.nan
         games_today["exp_goals"] = retro_model.predict(xgb.DMatrix(X_today))
 
         pmap = games_today.set_index(["game_id", "team"])["exp_goals"]
@@ -130,18 +124,20 @@ def main():
                 continue
             p_win, p_draw, p_loss, grid = predict_match(r["exp_goals"], opp)
             i, j = np.unravel_index(grid.argmax(), grid.shape)
-            all_out.append({
-                "game_id": r["game_id"],
-                "team": r["team"],
-                "opponent": r["opponent"],
-                "exp_goals": round(r["exp_goals"], 2),
-                "opp_exp_goals": round(opp, 2),
-                "p_win": round(p_win, 3),
-                "p_draw": round(p_draw, 3),
-                "p_loss": round(p_loss, 3),
-                "ml_score": f"{i}-{j}",
-                "pred_date": match_date.isoformat(),
-            })
+            all_out.append(
+                {
+                    "game_id": r["game_id"],
+                    "team": r["team"],
+                    "opponent": r["opponent"],
+                    "exp_goals": round(r["exp_goals"], 2),
+                    "opp_exp_goals": round(opp, 2),
+                    "p_win": round(p_win, 3),
+                    "p_draw": round(p_draw, 3),
+                    "p_loss": round(p_loss, 3),
+                    "ml_score": f"{i}-{j}",
+                    "pred_date": match_date.isoformat(),
+                }
+            )
             n_games += 1
 
         n_unique = n_games // 2

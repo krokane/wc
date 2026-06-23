@@ -10,6 +10,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
+from flask import session as flask_session
+
 import numpy as np
 import pandas as pd
 from dash import (
@@ -99,17 +101,11 @@ INTER = "'Inter', -apple-system, sans-serif"
 ADMIN_PASSWORD = os.environ.get("WC_ADMIN_PASSWORD", "admin1234")
 
 PIPELINE_STAGES = [
-    ("📡  Scrape Elo", "elo.py", "eloratings.net → data/elo_results.csv"),
-    ("📊  Process Stats", "stats.py", "footy_stats_data/ → data/fs_results.csv"),
-    ("🔧  Build Features", "features.py", "elo + stats → data/features.csv"),
-    ("🤖  Train Model", "model.py", "eval + deploy models → models/*.txt"),
-    ("📈  Evaluate", "test.py", "compare models on WC2026 holdout"),
-    ("🔮  Predict Upcoming", "fixtures.py", "live fixtures + deploy model"),
-    (
-        "💾  Save Predictions",
-        "save_predictions.py",
-        "snapshot today's upcoming preds → data/prediction_snapshots/",
-    ),
+    ("📡  Scrape Elo", "data_collection/elo.py", "eloratings.net → data/elo_results.csv"),
+    ("📊  Process Stats", "data_collection/stats.py", "footy_stats_data/ → data/fs_results.csv"),
+    ("🔧  Build Features", "data_collection/features.py", "elo + stats → data/features.csv"),
+    ("🤖  Train Model", "model.py", "deploy model → models/xgb_goals_deploy.txt"),
+    ("🔮  Predict Upcoming", "inference.py", "upcoming WC2026 fixtures → predictions"),
     (
         "🕰️  Retro Predictions",
         "retro_predict.py",
@@ -184,7 +180,7 @@ def ou_probs(lam_total, line):
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 def load_preds():
-    from fixtures import predict_upcoming
+    from inference import predict_upcoming
 
     return predict_upcoming()
 
@@ -1387,6 +1383,13 @@ app = Dash(
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
 )
 
+_flask_secret = os.environ.get("FLASK_SECRET_KEY")
+if not _flask_secret:
+    import warnings
+    warnings.warn("FLASK_SECRET_KEY not set — sessions won't survive restarts. Set it in production.")
+    _flask_secret = os.urandom(24)
+app.server.secret_key = _flask_secret
+
 _label_style = {
     "fontSize": "0.7rem",
     "color": TDIM,
@@ -2171,9 +2174,11 @@ def handle_auth(submit_clicks, pw_submit, logout_clicks, password):
     if not callback_context.triggered[0]["value"]:
         raise PreventUpdate
     if "logout-btn" in trigger:
+        flask_session.pop("is_admin", None)
         return False, ""
     # login attempt
     if password and hmac.compare_digest(password, ADMIN_PASSWORD):
+        flask_session["is_admin"] = True
         return True, ""
     return no_update, "Incorrect password."
 
@@ -2899,6 +2904,8 @@ def render_tracker(bets):
     prevent_initial_call=True,
 )
 def run_pipeline(*_):
+    if not flask_session.get("is_admin"):
+        raise PreventUpdate
     ctx = callback_context
     if not ctx.triggered:
         raise PreventUpdate
@@ -2906,9 +2913,11 @@ def run_pipeline(*_):
     trigger_id = ctx.triggered[0]["prop_id"]
 
     def run(script):
+        env = {**os.environ, "PYTHONPATH": str(ROOT / "scripts")}
         return subprocess.run(
             [sys.executable, str(ROOT / "scripts" / script)],
             cwd=str(ROOT),
+            env=env,
             capture_output=True,
             text=True,
         )
@@ -3110,6 +3119,8 @@ def _build_xg_table_div():
 def xg_editor_render(tab):
     if tab != "xg-editor":
         return no_update
+    if not flask_session.get("is_admin"):
+        return no_update
     return _build_xg_table_div()
 
 
@@ -3121,6 +3132,8 @@ def xg_editor_render(tab):
     prevent_initial_call=True,
 )
 def xg_editor_save(save_clicks, table_data):
+    if not flask_session.get("is_admin"):
+        raise PreventUpdate
     MANUAL_PATH = ROOT / "data" / "manual_xg.csv"
     save_msg = ""
 
@@ -3713,4 +3726,6 @@ def render_history(tab, date_mode, dropdown_date, store_json):
 if __name__ == "__main__":
     port = int(os.environ.get("DASH_PORT", "8050"))
     debug = os.environ.get("DASH_DEBUG", "0") == "1"
+    if debug and os.environ.get("FLY_APP_NAME"):
+        raise RuntimeError("DASH_DEBUG=1 is not allowed in production. Unset DASH_DEBUG on fly.io.")
     app.run(debug=debug, port=port)

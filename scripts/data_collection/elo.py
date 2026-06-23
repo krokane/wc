@@ -2,6 +2,7 @@ import io
 
 import pandas as pd
 import requests
+
 from tools.maps import COMP_MAP, WC26_TEAMS
 
 COLS = [
@@ -91,7 +92,7 @@ def scrape_clean_elo():
     ].any(axis=1)
     df["other_comp"] = (~any_known).astype(int)
 
-    df["pre_match_elo_t1"] = df["t1_elo"] + df["elo_delt"]
+    df["pre_match_elo_t1"] = df["t1_elo"] - df["elo_delt"]
     df["pre_match_elo_t2"] = df["t2_elo"] + df["elo_delt"]
 
     df = df[df["game_id"].str[-4:] != "drop"]
