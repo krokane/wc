@@ -8,9 +8,8 @@ from io import StringIO
 from pathlib import Path
 
 from dotenv import load_dotenv
-load_dotenv(Path(__file__).resolve().parent / ".env")
 
-from flask import session as flask_session
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 import numpy as np
 import pandas as pd
@@ -27,6 +26,7 @@ from dash import (
     no_update,
 )
 from dash.exceptions import PreventUpdate
+from flask import session as flask_session
 from scipy.stats import poisson
 
 ROOT = Path(__file__).resolve().parent
@@ -101,14 +101,31 @@ INTER = "'Inter', -apple-system, sans-serif"
 ADMIN_PASSWORD = os.environ.get("WC_ADMIN_PASSWORD", "admin1234")
 
 PIPELINE_STAGES = [
-    ("📡  Scrape Elo", "data_collection/elo.py", "eloratings.net → data/elo_results.csv"),
-    ("📊  Process Stats", "data_collection/stats.py", "footy_stats_data/ → data/fs_results.csv"),
-    ("🔧  Build Features", "data_collection/features.py", "elo + stats → data/features.csv"),
+    (
+        "📡  Scrape Elo",
+        "data_collection/elo.py",
+        "eloratings.net → data/elo_results.csv",
+    ),
+    (
+        "📊  Process Stats",
+        "data_collection/stats.py",
+        "footy_stats_data/ → data/fs_results.csv",
+    ),
+    (
+        "🔧  Build Features",
+        "data_collection/features.py",
+        "elo + stats → data/features.csv",
+    ),
     ("🤖  Train Model", "model.py", "deploy model → models/xgb_goals_deploy.txt"),
+    (
+        "📅  Fetch Upcoming",
+        "upcoming.py",
+        "eloratings.net → upcoming WC2026 fixtures",
+    ),
     ("🔮  Predict Upcoming", "inference.py", "upcoming WC2026 fixtures → predictions"),
     (
         "🕰️  Retro Predictions",
-        "retro_predict.py",
+        "inference_retro.py",
         "day-by-day backfill for past WC2026 games → data/retro_predictions.csv",
     ),
 ]
@@ -549,7 +566,6 @@ def edge_rows(outcomes, btn_type=None):
                 )
             )
 
-
         return html.Div(
             [
                 html.Div(
@@ -617,7 +633,6 @@ def edge_rows(outcomes, btn_type=None):
 
 
 # ── Tab layouts ───────────────────────────────────────────────────────────────
-
 
 
 def predictions_tab():
@@ -1313,7 +1328,10 @@ app = Dash(
 _flask_secret = os.environ.get("FLASK_SECRET_KEY")
 if not _flask_secret:
     import warnings
-    warnings.warn("FLASK_SECRET_KEY not set — sessions won't survive restarts. Set it in production.")
+
+    warnings.warn(
+        "FLASK_SECRET_KEY not set — sessions won't survive restarts. Set it in production."
+    )
     _flask_secret = os.urandom(24)
 app.server.secret_key = _flask_secret
 
@@ -2408,7 +2426,6 @@ def update_ou(line, over_o, under_o, game_id, store_json):
     )
 
 
-
 @app.callback(
     Output("pipe-output", "children"),
     Input({"type": "pipe-btn", "index": ALL}, "n_clicks"),
@@ -2435,7 +2452,7 @@ def run_pipeline(*_):
         )
 
     if "pipe-all-btn" in trigger_id:
-        scripts = [s for _, s, _ in PIPELINE_STAGES[:-1]]
+        scripts = [s for _, s, _ in PIPELINE_STAGES]
         logs = []
         for script in scripts:
             res = run(script)
@@ -3239,5 +3256,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("DASH_PORT", "8050"))
     debug = os.environ.get("DASH_DEBUG", "0") == "1"
     if debug and os.environ.get("FLY_APP_NAME"):
-        raise RuntimeError("DASH_DEBUG=1 is not allowed in production. Unset DASH_DEBUG on fly.io.")
+        raise RuntimeError(
+            "DASH_DEBUG=1 is not allowed in production. Unset DASH_DEBUG on fly.io."
+        )
     app.run(debug=debug, port=port)

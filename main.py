@@ -66,7 +66,7 @@ def predict_played():
     run_script("inference.py")
 
 
-@cli.command("retro-predict")
+@cli.command("retro")
 def retro_predict():
     """day-by-day retroactive predictions for past WC2026 games (clean model, no leakage)"""
     run_script("inference_retro.py")
