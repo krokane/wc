@@ -6,6 +6,9 @@ import pandas as pd
 import requests
 from tools.columns import LAG_COLS
 from tools.maps import WC26_TEAMS
+from tools.net import pin_ipv4
+
+pin_ipv4()
 
 FIXTURES_URL = "https://www.eloratings.net/2026_World_Cup_fixtures.tsv"
 FEATURES_PATH = "./data/features.csv"

@@ -3181,12 +3181,45 @@ def render_history(tab, date_mode, dropdown_date, store_json):
     games["_date"] = pd.to_datetime(games["date_iso"]).dt.date
 
     wp = games[games["has_preds"].astype(bool)]
+
+    elo_ok = games["pre_match_elo_t1"].notna() & games["pre_match_elo_t2"].notna()
+    elo_games = games[elo_ok].copy()
+    if len(elo_games):
+        elo_games["elo_pred"] = np.where(
+            elo_games["pre_match_elo_t1"] > elo_games["pre_match_elo_t2"],
+            "team_win",
+            np.where(
+                elo_games["pre_match_elo_t1"] < elo_games["pre_match_elo_t2"],
+                "opp_win",
+                "draw",
+            ),
+        )
+        elo_accuracy = float((elo_games["elo_pred"] == elo_games["actual_outcome"]).mean())
+
+        def _elo_rps(row):
+            pred = row["elo_pred"]
+            actual = row["actual_outcome"]
+            p_win = 1.0 if pred == "team_win" else 0.0
+            p_draw = 1.0 if pred == "draw" else 0.0
+            p_loss = 1.0 if pred == "opp_win" else 0.0
+            code = {"team_win": 1, "draw": 0, "opp_win": -1}[actual]
+            cum = np.cumsum([p_win, p_draw, p_loss])
+            actv = np.cumsum([code == 1, code == 0, code == -1])
+            return float(np.mean((cum - actv) ** 2))
+
+        elo_avg_rps = float(elo_games.apply(_elo_rps, axis=1).mean())
+    else:
+        elo_accuracy = None
+        elo_avg_rps = None
+
     metrics = {
         "total_games": len(games),
         "with_preds": len(wp),
         "correct": int(wp["is_correct"].sum()) if len(wp) else 0,
         "accuracy": float(wp["is_correct"].mean()) if len(wp) else 0.0,
         "avg_rps": float(wp["rps_score"].mean()) if len(wp) else 0.0,
+        "elo_accuracy": elo_accuracy,
+        "elo_avg_rps": elo_avg_rps,
     }
 
     # Date filter — applies to cards only; summary metrics are always all-time
@@ -3204,6 +3237,8 @@ def render_history(tab, date_mode, dropdown_date, store_json):
     correct = metrics["correct"]
     accuracy = metrics["accuracy"]
     avg_rps = metrics["avg_rps"]
+    elo_accuracy = metrics["elo_accuracy"]
+    elo_avg_rps = metrics["elo_avg_rps"]
 
     summary = html.Div(
         [
@@ -3213,6 +3248,14 @@ def render_history(tab, date_mode, dropdown_date, store_json):
             ),
             _metric_card(f"{accuracy * 100:.0f}%" if with_preds else "—", "Accuracy"),
             _metric_card(f"{avg_rps:.3f}" if with_preds else "—", "Avg RPS"),
+            _metric_card(
+                f"{elo_accuracy * 100:.0f}%" if elo_accuracy is not None else "—",
+                "ELO Accuracy",
+            ),
+            _metric_card(
+                f"{elo_avg_rps:.3f}" if elo_avg_rps is not None else "—",
+                "ELO RPS",
+            ),
         ],
         style={
             "display": "flex",

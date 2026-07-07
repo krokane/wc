@@ -4,6 +4,9 @@ import pandas as pd
 import requests
 
 from tools.maps import COMP_MAP, WC26_TEAMS
+from tools.net import pin_ipv4
+
+pin_ipv4()
 
 COLS = [
     "year",
@@ -28,7 +31,8 @@ COLS = [
 
 def get_elo_yr(yr):
     url = f"https://www.eloratings.net/{yr}_results.tsv"
-    r = requests.get(url)
+    r = requests.get(url, timeout=15)
+    r.raise_for_status()
 
     return pd.read_csv(io.StringIO(r.text), sep="\t", names=COLS)
 
